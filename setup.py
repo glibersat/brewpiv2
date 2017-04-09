@@ -8,5 +8,8 @@ setup(
     description = 'Library for driving BrewPi v2 controllers',
     license = 'GNU AGPL',
 
-    packages = ['brewpiv2', 'brewpiv2/commands']
+    packages = ['brewpiv2', 'brewpiv2/commands'],
+
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
 )
