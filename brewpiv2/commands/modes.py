@@ -1,5 +1,6 @@
 from .base import ControllerCommand
 
+
 class ModeCommand(ControllerCommand):
     """
     Common class for modes on the controller (Beer, Fridge, Profile, Off)
@@ -7,11 +8,21 @@ class ModeCommand(ControllerCommand):
     cmd = 'j'
 
     mode = None
-    setpoint_name = None
 
     def __init__(self, setpoint=None):
         super().__init__()
         self.options['mode'] = self.mode
+
+
+class ConstantTemperatureModeCommand(ModeCommand):
+    """
+    A mode with a constant temperature set point
+    """
+    setpoint_name = None
+
+    def __init__(self, setpoint=None):
+        super().__init__()
+        self.setpoint = setpoint
 
     @property
     def setpoint(self):
@@ -22,19 +33,21 @@ class ModeCommand(ControllerCommand):
         self.options[self.setpoint_name] = value
 
 
-class BeerModeCommand(ModeCommand):
+class BeerModeCommand(ConstantTemperatureModeCommand):
     """
     Constant Beer Mode
     """
     mode = 'b'
     setpoint_name = 'beerSet'
 
-class FridgeModeCommand(ModeCommand):
+
+class FridgeModeCommand(ConstantTemperatureModeCommand):
     """
     Constant Fridge Mode
     """
     mode = 'f'
-    setpoint_name = 'frigeSet'
+    setpoint_name = 'fridgeSet'
+
 
 class OffModeCommand(ModeCommand):
     """

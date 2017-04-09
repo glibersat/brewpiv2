@@ -20,7 +20,5 @@ class BrewPiController:
     def send(self, aCommand):
         rendered_cmd = aCommand.render()
         LOGGER.debug("Sending to controller: {0}".format(rendered_cmd))
-        self.serial.write(rendered_cmd)
+        self.serial.write("{0}\n".format(rendered_cmd))
         self.serial.flush()
-
-

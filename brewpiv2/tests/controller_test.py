@@ -1,5 +1,3 @@
-from unittest.mock import patch, call
-
 from ..controller import BrewPiController
 
 
