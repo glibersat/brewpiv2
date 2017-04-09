@@ -1,4 +1,7 @@
-from .decoder import register_message_to_decoder
+from .control import ControlSettingsMessage
 from .version import VersionMessage
+from .logging import LogMessage
 
-__all__ = [VersionMessage, register_message_to_decoder]
+__all__ = [VersionMessage,
+           ControlSettingsMessage,
+           LogMessage]

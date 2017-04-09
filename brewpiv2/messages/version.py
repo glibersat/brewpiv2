@@ -1,8 +1,8 @@
 from .base import Message
-from .decoder import register_message_to_decoder
+from .decoder import register_to_decoder
 
 
-@register_message_to_decoder()
+@register_to_decoder()
 class VersionMessage(Message):
     cmd = "N"
 
