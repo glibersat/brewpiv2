@@ -1,5 +1,6 @@
 import json
 import re
+from copy import copy
 
 
 class ControllerCommand:
@@ -8,8 +9,10 @@ class ControllerCommand:
     """
     cmd = None
 
+    default_options = {}
+
     def __init__(self):
-        self.options = {}
+        self.options = copy(self.default_options)
 
     @staticmethod
     def make_data_json(data):

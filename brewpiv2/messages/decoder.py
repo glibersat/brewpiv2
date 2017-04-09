@@ -8,7 +8,6 @@ def register_to_decoder():
     Register a controller message object to `MessageDecoder`
     """
     def _register_in_messagedecoder(message_type):
-        LOGGER.debug("Registered message type {0}".format(message_type))
         RawMessageDecoder.register_message_type(message_type)
 
     return _register_in_messagedecoder
@@ -25,6 +24,7 @@ class RawMessageDecoder:
         """
         Add a Message type to mapping
         """
+        LOGGER.debug("Registered message type {0} -> {1}".format(aMessageType.cmd, aMessageType))
         cls.mapping[aMessageType.cmd] = aMessageType
 
     def decode_controller_message(self, raw_message):
@@ -38,8 +38,6 @@ class RawMessageDecoder:
 
         try:
             message_type = self.mapping[cmd]
-            return message_type.from_raw(raw_message)
+            yield from message_type.from_raw(raw_message)
         except KeyError:
-            LOGGER.error("Message <{0}> not supported, dropping".format(cmd))
-
-        return None
+            LOGGER.error("Message <{0}> not supported, dropping (was {1})".format(cmd, raw_message))

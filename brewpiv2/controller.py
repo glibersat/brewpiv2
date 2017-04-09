@@ -50,9 +50,7 @@ class BrewPiController:
 
             if new_data:
                 self.buffer += new_data
-
-                for message in self._coerce_message_from_buffer():
-                    yield message
+                yield from self._coerce_message_from_buffer()
 
     def _filter_out_log_messages(self, input_string):
         """
@@ -74,8 +72,7 @@ class BrewPiController:
         while '\n' in self.buffer:
             stripped_buffer, log_messages = self._filter_out_log_messages(self.buffer)
             if len(log_messages) > 0:
-                for log_message in log_messages:
-                    yield log_message
+                yield from log_messages
                 self.buffer = stripped_buffer
                 continue
 

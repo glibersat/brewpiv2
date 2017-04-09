@@ -22,6 +22,6 @@ class VersionMessage(Message):
         self.board = board
 
     def __str__(self):
-        return "Version <version:{0}, build:{1}, board: {2}".format(self.version,
-                                                                    self.build,
-                                                                    self.board)
+        return "Version <version:{0}, build:{1}, board: {2}>".format(self.version,
+                                                                     self.build,
+                                                                     self.board)
