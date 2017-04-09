@@ -34,6 +34,10 @@ class ControllerCommand:
         """
         Render this command as a brewpi-formatted string
         """
+        # If we don't have options, just return command name
+        if self.options == {}:
+            return self.cmd
+
         # Don't serialize options without a value
         cleaned_options = {key: value
                            for key, value in self.options.items()

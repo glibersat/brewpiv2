@@ -3,4 +3,9 @@ from .modes import (
     OffModeCommand
 )
 
-__all_ = [BeerModeCommand, FridgeModeCommand, OffModeCommand]
+from .requests import VersionRequestCommand
+
+__all_ = [VersionRequestCommand,
+          BeerModeCommand,
+          FridgeModeCommand,
+          OffModeCommand]
