@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import re
 import logging
 import time
@@ -6,52 +7,15 @@ import serial
 from serial.tools import list_ports
 
 from .exceptions import ControllerNotConnectedException
+from .utils import Observable, Observer, Event
 
 LOGGER = logging.getLogger(__name__)
 
+#-- events --#
+controller_connected = Event("controller_connected", "A controller has connected")
+controller_disconnected = Event("controller_disconnected", "A controller has been disconnected")
 
-class BrewPiControllerManager:
-    """
-    Helper for discovering BrewPi controllers on USB serial lines
-    """
-    BREWPI_PHOTON_HWID = r"VID:PID=2B04:C006"
-
-    def __init__(self):
-        self.controllers = {}
-
-    def update(self):
-        """
-        Update list of serial ports where a BrewPi Controller *might* be
-        attached.
-
-        Yields new controllers
-        """
-        detected_ports = list(list_ports.grep(regexp=self.BREWPI_PHOTON_HWID))
-
-        # Remove stale devices
-        for device, controller in list(self.controllers.items()):
-            found = False
-
-            # Look for our device in the detected ports
-            for port in detected_ports:
-                if port.device == device:
-                    found = True
-                    break
-
-            # Mark as disconnected if stale
-            if not found:
-                controller.disconnect()
-                self.controllers.pop(device)
-
-        # Add new devices
-        for port in detected_ports:
-            if port.device not in self.controllers:
-                LOGGER.info("Found new controller on port {0}".format(port.device))
-                self.controllers[port.device] = BrewPiController(port.device)
-
-                yield self.controllers[port.device]
-
-
+#-- decorators --#
 def requires_port_open(f):
     """
     Only call method if controller port is open and readable, otherwise throw
@@ -77,12 +41,15 @@ def requires_connected(f):
     return wrapper
 
 
-class BrewPiController:
+#-- Classes --#
+class BrewPiController(Observable):
     """
     The actual BrewPi Controller.
     Handle reading and writing commands to/from the serial port.
     """
     def __init__(self, serial_port):
+        super().__init__()
+
         self.serial = None
         self.serial_port = serial_port
 
@@ -111,6 +78,7 @@ class BrewPiController:
             return False
 
         if self.is_connected:
+            self.notify(controller_connected, self)
             self.log_debug("Controller connected!")
 
         return self.is_connected
@@ -120,6 +88,7 @@ class BrewPiController:
             self.serial.close()
             self.is_connected = False
 
+        self.notify(controller_disconnected, self)
         self.log_debug("Controller disconnected".format(self.serial_port))
 
         return not self.is_connected
@@ -185,3 +154,62 @@ class BrewPiController:
                 # complete line received, [0] is complete line [1] is separator [2] is the rest
                 self.buffer = lines[2]
                 yield lines[0]
+
+
+
+class ControllerObserver(Observer):
+    """
+    Abstract class that answers to controller manager events
+    """
+    @abstractmethod
+    def _on_controller_connected(self, aBrewPiController):
+        pass
+
+    @abstractmethod
+    def _on_controller_disconnected(self, aBrewPiController):
+        pass
+
+
+class BrewPiControllerManager(Observable):
+    """
+    Helper for discovering BrewPi controllers on USB serial lines
+    """
+    BREWPI_PHOTON_HWID = r"VID:PID=2B04:C006"
+
+    def __init__(self):
+        super().__init__()
+
+        self.controllers = {}
+
+    def update(self):
+        """
+        Update list of serial ports where a BrewPi Controller *might* be
+        attached.
+
+        Yields new controllers
+        """
+        detected_ports = list(list_ports.grep(regexp=self.BREWPI_PHOTON_HWID))
+
+        # Remove stale devices
+        for device, controller in list(self.controllers.items()):
+            found = False
+
+            # Look for our device in the detected ports
+            for port in detected_ports:
+                if port.device == device:
+                    found = True
+                    break
+
+            # Mark as disconnected if stale
+            if not found:
+                controller.disconnect()
+                self.controllers.pop(device)
+
+        # Add new devices
+        for port in detected_ports:
+            if port.device not in self.controllers:
+                LOGGER.info("Found new controller on port {0}".format(port.device))
+                self.controllers[port.device] = BrewPiController(port.device)
+
+                yield self.controllers[port.device]
+
