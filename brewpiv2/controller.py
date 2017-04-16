@@ -1,21 +1,23 @@
 from abc import abstractmethod
 import re
 import logging
-import time
-
 import serial
 from serial.tools import list_ports
 
-from .exceptions import ControllerNotConnectedException
+from .exceptions import (
+    ControllerNotConnectedException,
+    ControllerPortNotOpenException
+)
 from .utils import Observable, Observer, Event
 
 LOGGER = logging.getLogger(__name__)
 
-#-- events --#
+# -- events -- #
 controller_connected = Event("controller_connected", "A controller has connected")
 controller_disconnected = Event("controller_disconnected", "A controller has been disconnected")
 
-#-- decorators --#
+
+# -- decorators -- #
 def requires_port_open(f):
     """
     Only call method if controller port is open and readable, otherwise throw
@@ -41,7 +43,7 @@ def requires_connected(f):
     return wrapper
 
 
-#-- Classes --#
+# -- Classes -- #
 class BrewPiController(Observable):
     """
     The actual BrewPi Controller.
@@ -156,7 +158,6 @@ class BrewPiController(Observable):
                 yield lines[0]
 
 
-
 class ControllerObserver(Observer):
     """
     Abstract class that answers to controller manager events
@@ -212,4 +213,3 @@ class BrewPiControllerManager(Observable):
                 self.controllers[port.device] = BrewPiController(port.device)
 
                 yield self.controllers[port.device]
-
