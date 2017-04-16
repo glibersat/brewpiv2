@@ -1,5 +1,6 @@
 import re
 import logging
+import time
 
 import serial
 from serial.tools import list_ports
@@ -51,13 +52,26 @@ class BrewPiControllerManager:
                 yield self.controllers[port.device]
 
 
+def requires_port_open(f):
+    """
+    Only call method if controller port is open and readable, otherwise throw
+    an exception.
+    """
+    def wrapper(obj, *args):
+        if (obj.serial and obj.serial.is_open) is True:
+            return f(obj, *args)
+        else:
+            raise ControllerPortNotOpenException()
+    return wrapper
+
+
 def requires_connected(f):
     """
-    Only call method if controller is connected, otherwise returns False
+    Only call method if controller is connected, otherwise throw an exception.
     """
-    def wrapper(*args):
-        if args[0].is_connected is True:
-            return f(*args)
+    def wrapper(obj, *args):
+        if obj.is_connected is True:
+            return f(obj, *args)
         else:
             raise ControllerNotConnectedException()
     return wrapper
@@ -94,6 +108,10 @@ class BrewPiController:
             self.is_connected = True
         except serial.serialutil.SerialException as e:
             self.log("Error while opening controller, aborting ({0})".format(e), level=logging.WARNING)
+            return False
+
+        if self.is_connected:
+            self.log_debug("Controller connected!")
 
         return self.is_connected
 
@@ -104,7 +122,7 @@ class BrewPiController:
 
         self.log_debug("Controller disconnected".format(self.serial_port))
 
-        return self.is_connected
+        return not self.is_connected
 
     @requires_connected
     def send(self, aCommand):
@@ -115,7 +133,7 @@ class BrewPiController:
         self.log_debug("Sending to controller: {0}".format(rendered_cmd))
         self.send_raw(rendered_cmd)
 
-    @requires_connected
+    @requires_port_open
     def send_raw(self, raw_message):
         """
         Send raw payload to controller
@@ -124,7 +142,7 @@ class BrewPiController:
         self.serial.write(full_message.encode('ascii'))
         self.serial.flush()
 
-    @requires_connected
+    @requires_port_open
     def process_messages(self):
         in_waiting = self.serial.inWaiting()
         if in_waiting > 0:
@@ -167,12 +185,3 @@ class BrewPiController:
                 # complete line received, [0] is complete line [1] is separator [2] is the rest
                 self.buffer = lines[2]
                 yield lines[0]
-
-    @requires_connected
-    def read_messages(self):
-        """
-        Read messages from controller wire and return them as iterator
-        """
-        for raw_message in self.read_message():
-            LOGGER.debug("Received {0}".format(raw_message))
-            yield raw_message
