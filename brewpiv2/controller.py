@@ -1,5 +1,6 @@
 import re
 import logging
+
 import serial
 from serial.tools import list_ports
 
@@ -158,7 +159,7 @@ class BrewPiController:
                 self.buffer = stripped_buffer
                 continue
 
-            lines = self.buffer.partition('\n') # returns 3-tuple with line, separator, rest
+            lines = self.buffer.partition('\n')  # returns 3-tuple with line, separator, rest
             if not lines[1]:
                 # '\n' not found, first element is incomplete line
                 self.buffer = lines[0]

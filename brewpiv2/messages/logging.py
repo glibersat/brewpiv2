@@ -1,6 +1,7 @@
 from .base import Message
 from .decoder import register_to_decoder
 
+
 @register_to_decoder()
 class LogMessage(Message):
     """
@@ -27,4 +28,3 @@ class LogMessage(Message):
         return "LogMessage <level:{0}, id:{1}, msg:{2}>".format(self.level,
                                                                 self.id,
                                                                 self.message)
-

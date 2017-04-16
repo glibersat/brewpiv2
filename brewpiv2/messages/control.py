@@ -1,15 +1,19 @@
 from .base import Message
 from .decoder import register_to_decoder
 
+
 @register_to_decoder()
 class ControlSettingsMessage(Message):
+    """
+    Ask the controller for a Control Settings change
+    """
     cmd = 'S'
 
     mode = None
     beer_setpoint = None
     fridge_setpoint = None
 
-    data_mapping ={
+    data_mapping = {
         'mode': 'mode',
         'beerSet': 'beer_setpoint',
         'fridgeSet': 'fridge_setpoint'
