@@ -1,5 +1,4 @@
 import pytest
-import serial
 
 from ..controller import BrewPiController
 from ..exceptions import (
@@ -19,10 +18,10 @@ class TestDisconnectedController:
 
     def test_port_does_not_exist(self):
         self.ctrl = BrewPiController('/dev/does_not_exist')
-        assert(self.ctrl.connect() == False)
+        assert(self.ctrl.connect() is False)
 
     def test_connect(self):
-        assert(self.ctrl.connect() == True)
+        assert(self.ctrl.connect() is True)
 
     def test_disconnect_not_connected(self):
         assert(self.ctrl.disconnect() is True)

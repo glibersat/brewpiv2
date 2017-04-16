@@ -22,7 +22,7 @@ class TestSerialization:
     def test_list_installed_devices(self):
         cmd = ListInstalledDevicesCommand()
         data = cmd.render()
-        
+
         is_same = ListInstalledDevicesCommand.compare_data(data, "d")
         assert(is_same)
 
@@ -32,4 +32,3 @@ class TestSerialization:
 
         is_same = ListInstalledDevicesCommand.compare_data(data, "d{r:1}")
         assert(is_same)
-
