@@ -1,0 +1,2 @@
+class ControllerNotConnectedException(Exception):
+    pass

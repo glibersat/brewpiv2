@@ -1,8 +1,65 @@
 import re
 import logging
 import serial
+from serial.tools import list_ports
+
+from .exceptions import ControllerNotConnectedException
 
 LOGGER = logging.getLogger(__name__)
+
+
+class BrewPiControllerManager:
+    """
+    Helper for discovering BrewPi controllers on USB serial lines
+    """
+    BREWPI_PHOTON_HWID = r"VID:PID=2B04:C006"
+
+    def __init__(self):
+        self.controllers = {}
+
+    def update(self):
+        """
+        Update list of serial ports where a BrewPi Controller *might* be
+        attached.
+
+        Yields new controllers
+        """
+        detected_ports = list(list_ports.grep(regexp=self.BREWPI_PHOTON_HWID))
+
+        # Remove stale devices
+        for device, controller in list(self.controllers.items()):
+            found = False
+
+            # Look for our device in the detected ports
+            for port in detected_ports:
+                if port.device == device:
+                    found = True
+                    break
+
+            # Mark as disconnected if stale
+            if not found:
+                controller.disconnect()
+                self.controllers.pop(device)
+
+        # Add new devices
+        for port in detected_ports:
+            if port.device not in self.controllers:
+                LOGGER.info("Found new controller on port {0}".format(port.device))
+                self.controllers[port.device] = BrewPiController(port.device)
+
+                yield self.controllers[port.device]
+
+
+def requires_connected(f):
+    """
+    Only call method if controller is connected, otherwise returns False
+    """
+    def wrapper(*args):
+        if args[0].is_connected is True:
+            return f(*args)
+        else:
+            raise ControllerNotConnectedException()
+    return wrapper
 
 
 class BrewPiController:
@@ -16,24 +73,48 @@ class BrewPiController:
 
         self.buffer = ''
 
+        self.is_connected = False
+
+    def log_debug(self, message):
+        self.log(message, level=logging.DEBUG)
+
+    def log(self, message, level=logging.INFO):
+        LOGGER.log(level, "[{0}] {1}".format(self.serial_port, message))
+
     def connect(self):
         """
         Initiate a serial connection to the controller
         """
-        LOGGER.debug("Opening controller at: {0}".format(self.serial_port))
-        self.serial = serial.serial_for_url(self.serial_port, 57600, timeout=0)
-        self.serial.write_timeout = 2
+        self.log_debug("Opening controller...")
 
-        return self.serial.is_open
+        try:
+            self.serial = serial.serial_for_url(self.serial_port, 57600, timeout=0)
+            self.serial.write_timeout = 2
+            self.is_connected = True
+        except serial.serialutil.SerialException as e:
+            self.log("Error while opening controller, aborting ({0})".format(e), level=logging.WARNING)
 
+        return self.is_connected
+
+    def disconnect(self):
+        if (self.serial is not None) and self.serial.is_open:
+            self.serial.close()
+            self.is_connected = False
+
+        self.log_debug("Controller disconnected".format(self.serial_port))
+
+        return self.is_connected
+
+    @requires_connected
     def send(self, aCommand):
         """
         Send a `Command` to the controller
         """
         rendered_cmd = aCommand.render()
-        LOGGER.debug("Sending to controller: {0}".format(rendered_cmd))
+        self.log_debug("Sending to controller: {0}".format(rendered_cmd))
         self.send_raw(rendered_cmd)
 
+    @requires_connected
     def send_raw(self, raw_message):
         """
         Send raw payload to controller
@@ -42,6 +123,7 @@ class BrewPiController:
         self.serial.write(full_message.encode('ascii'))
         self.serial.flush()
 
+    @requires_connected
     def process_messages(self):
         in_waiting = self.serial.inWaiting()
         if in_waiting > 0:
@@ -85,6 +167,7 @@ class BrewPiController:
                 self.buffer = lines[2]
                 yield lines[0]
 
+    @requires_connected
     def read_messages(self):
         """
         Read messages from controller wire and return them as iterator
