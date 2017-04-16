@@ -25,11 +25,17 @@ class ControllerCommand:
     def compare_data(data1, data2):
         data1_cmd = data1[0]
         data1_json_options = ControllerCommand.make_data_json(data1[1:])
-        data1_options = json.loads(data1_json_options)
+        if data1_json_options:
+            data1_options = json.loads(data1_json_options)
+        else:
+            data1_options = None
 
         data2_cmd = data2[0]
         data2_json_options = ControllerCommand.make_data_json(data2[1:])
-        data2_options = json.loads(data2_json_options)
+        if data2_json_options:
+            data2_options = json.loads(data2_json_options)
+        else:
+            data2_options = None
 
         return (data1_cmd == data2_cmd) and (data1_options == data2_options)
 
