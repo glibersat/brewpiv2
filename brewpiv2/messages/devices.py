@@ -80,7 +80,6 @@ class DeviceMessage(Message):
                                                                  hardware_type=self.hardware_type_str())
 
 
-
 @register_to_decoder()
 class AvailableDeviceMessage(DeviceMessage):
     """
@@ -101,4 +100,3 @@ class InstalledDeviceMessage(DeviceMessage):
 
     def __str__(self):
         return "Installed {0}".format(super().__str__())
-

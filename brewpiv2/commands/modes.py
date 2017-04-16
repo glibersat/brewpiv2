@@ -49,6 +49,14 @@ class FridgeModeCommand(ConstantTemperatureModeCommand):
     setpoint_name = 'fridgeSet'
 
 
+class ProfileModeCommand(ConstantTemperatureModeCommand):
+    """
+    Profile Beer Mode
+    """
+    mode = 'p'
+    setpoint_name = 'beerSet'
+
+
 class OffModeCommand(ModeCommand):
     """
     Off mode: disable temperature control

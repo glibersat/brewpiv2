@@ -1,6 +1,6 @@
 from .modes import (
     BeerModeCommand, FridgeModeCommand,
-    OffModeCommand
+    ProfileModeCommand, OffModeCommand
 )
 
 from .requests import VersionRequestCommand
@@ -12,6 +12,7 @@ from .devices import (
 __all_ = [VersionRequestCommand,
           BeerModeCommand,
           FridgeModeCommand,
+          ProfileModeCommand,
           OffModeCommand,
           ListInstalledDevicesCommand,
           ListAvailableDevicesCommand]
