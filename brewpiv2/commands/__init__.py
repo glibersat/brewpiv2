@@ -6,7 +6,9 @@ from .modes import (
 from .requests import VersionRequestCommand
 from .devices import (
     ListInstalledDevicesCommand,
-    ListAvailableDevicesCommand
+    ListAvailableDevicesCommand,
+    InstallDeviceCommand,
+    UninstallDeviceCommand
 )
 
 __all_ = [VersionRequestCommand,
@@ -15,4 +17,6 @@ __all_ = [VersionRequestCommand,
           ProfileModeCommand,
           OffModeCommand,
           ListInstalledDevicesCommand,
-          ListAvailableDevicesCommand]
+          ListAvailableDevicesCommand,
+          InstallDeviceCommand,
+          UninstallDeviceCommand]

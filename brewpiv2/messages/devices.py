@@ -1,4 +1,10 @@
 from .base import Message
+from ..constants import (
+    DeviceFunction,
+    DeviceType,
+    HardwareType
+)
+
 from .decoder import register_to_decoder
 
 
@@ -6,42 +12,6 @@ class DeviceMessage(Message):
     """
     Abtract Class that holds common device information
     """
-    (DIGITAL_PIN, TEMP_SENSOR,
-     DS2413, DS2408VALVE) = range(1, 5)  # Hardware Type
-
-    hardware_types = {0: 'Unknown hardware',
-                      DIGITAL_PIN: 'Digital Pin',
-                      TEMP_SENSOR: 'Temperature Sensor',
-                      DS2413: 'DS2413 Expansion Board',
-                      DS2408VALVE: 'DS2408 Valve Board'}
-
-    (TEMP_SENSOR, SWITCH_SENSOR,
-     SWITCH_ACTUATOR, PWM_ACTUATOR,
-     TYPE_MANUAL_ACTUATOR) = range(1, 6)  # Device type
-
-    device_types = {0: 'Unknown device type',
-                    TEMP_SENSOR: 'Temperature Sensor',
-                    SWITCH_SENSOR: 'Switch Sensor',
-                    SWITCH_ACTUATOR: 'Switch Actuator',
-                    PWM_ACTUATOR: 'PWN Actuator',
-                    TYPE_MANUAL_ACTUATOR: 'Manual Actuator'}
-
-
-    (CHAMBER_DOOR, CHAMBER_HEATER,
-     CHAMBER_COOLER, CHAMBER_LIGHT,
-     CHAMBER_TEMP, ROOM_TEMP, CHAMBER_FAN,
-     FN_MANUAL_ACTUATOR, BEER_TEMP) = range(1, 10)
-
-    device_functions = {0: 'None',
-                        CHAMBER_DOOR: 'Chamber Door',
-                        CHAMBER_HEATER: 'Chamber Heater',
-                        CHAMBER_COOLER: 'Chamber Cooler',
-                        CHAMBER_LIGHT: 'Chamber Light',
-                        CHAMBER_TEMP: 'Chamber Temp',
-                        ROOM_TEMP: 'Room Temp',
-                        CHAMBER_FAN: 'Chamber Fan',
-                        FN_MANUAL_ACTUATOR: 'Manual Actuator',
-                        BEER_TEMP: 'Beer Temp'}
 
     data_mapping = {
         'i': 'slot',
@@ -74,24 +44,6 @@ class DeviceMessage(Message):
         self.address = address
         self.value = value
 
-    def hardware_type_str(self):
-        """
-        Represent hardware type as string
-        """
-        return self.hardware_types[self.hardware_type]
-
-    def device_type_str(self):
-        """
-        Represent device type as string
-        """
-        return self.device_types[self.device_type]
-
-    def device_function_str(self):
-        """
-        Represent device function as string
-        """
-        return self.device_functions[self.function]
-
     def __str__(self):
         return "Device <slot:{self.slot}, device_type:{device_type}, " \
             "chamber:{self.assigned_to_chamber}, beer:{self.assigned_to_beer}, " \
@@ -99,9 +51,9 @@ class DeviceMessage(Message):
             "d:{self.d}, pin:{self.pin}, pin_inverted?:{self.pin_inverted}, "\
             "output_nr:{self.output_nr}, " \
             "address:{self.address}, value:{self.value}>".format(self=self,
-                                                                 device_type=self.device_type_str(),
-                                                                 hardware_type=self.hardware_type_str(),
-                                                                 function=self.device_function_str())
+                                                                 device_type=DeviceType.to_str(self.device_type),
+                                                                 hardware_type=HardwareType.to_str(self.hardware_type),
+                                                                 function=DeviceFunction.to_str(self.function))
 
 
 @register_to_decoder()
