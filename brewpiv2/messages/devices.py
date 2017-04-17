@@ -38,7 +38,7 @@ class DeviceMessage(Message):
         'x': 'pin_inverted',
         'n': 'output_nr',
         'a': 'address',
-        'j': 'value'
+        'v': 'value'
     }
 
     def __init__(self, slot, device_type, assigned_to_chamber,
