@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class Event(ABC):
@@ -40,3 +40,12 @@ class Observable(ABC):
             callback_name = "_on_{0}".format(anEvent.name)
             callback = getattr(observer, callback_name)
             callback(*args, **kwargs)
+
+
+class Visitor(ABC):
+    """
+    Minismalist Visitor pattern
+    """
+    @abstractmethod
+    def visit(self, aMessageHandler):
+        raise NotImplementedError

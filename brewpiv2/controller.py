@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 import re
 import logging
 import serial
@@ -8,7 +8,10 @@ from .exceptions import (
     ControllerNotConnectedException,
     ControllerPortNotOpenException
 )
-from .utils import Observable, Observer, Event
+from .utils import (
+    Observable, Observer, Event,
+    Visitor
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -170,7 +173,7 @@ class ControllerObserver(Observer):
     def _on_controller_disconnected(self, aBrewPiController):
         pass
 
-
+    
 class BrewPiControllerManager(Observable):
     """
     Helper for discovering BrewPi controllers on USB serial lines
@@ -213,3 +216,19 @@ class BrewPiControllerManager(Observable):
                 self.controllers[port.device] = BrewPiController(port.device)
 
                 yield self.controllers[port.device]
+
+
+class MessageHandler(ABC):
+    """
+    An abstract class handling visits from Messages
+    """
+    def accept(self, aMessage):
+        aMessage.visit(self)
+
+    @abstractmethod
+    def installed_device(self, anInstalledDeviceMessage):
+        raise NotImplementedError
+
+    @abstractmethod
+    def available_device(self, anAvailableDeviceMessage):
+        raise NotImplementedError

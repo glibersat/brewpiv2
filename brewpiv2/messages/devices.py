@@ -63,6 +63,9 @@ class AvailableDeviceMessage(DeviceMessage):
     """
     cmd = 'h'
 
+    def visit(self, aMessageHandler):
+        aMessageHandler.available_device(self)
+
     def __str__(self):
         return "Available {0}".format(super().__str__())
 
@@ -73,6 +76,9 @@ class InstalledDeviceMessage(DeviceMessage):
     Installed devices (installed) on the controller
     """
     cmd = 'd'
+
+    def visit(self, aMessageHandler):
+        aMessageHandler.installed_device(self)
 
     def __str__(self):
         return "Installed {0}".format(super().__str__())

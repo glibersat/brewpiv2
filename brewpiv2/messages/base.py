@@ -1,7 +1,9 @@
 import json
 
+from ..utils import Visitor
 
-class Message:
+
+class Message(Visitor):
     """
     A `Message` is a high level representation of an information sent from the
     controller such as the list of available devices or a temperature.
