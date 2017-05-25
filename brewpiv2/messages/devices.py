@@ -82,3 +82,17 @@ class InstalledDeviceMessage(DeviceMessage):
 
     def __str__(self):
         return "Installed {0}".format(super().__str__())
+
+@register_to_decoder()
+class UninstalledDeviceMessage(DeviceMessage):
+    """
+    When a device has been uninstalled
+    """
+    cmd = 'U'
+
+    def visit(self, aMessageHandler):
+        aMessageHandler.uninstalled_device(self)
+
+    def __str__(self):
+        return "Uinstalled {0}".format(super().__str__())
+

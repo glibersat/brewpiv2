@@ -3,6 +3,7 @@ import logging
 import time
 
 import coloredlogs
+import yaml
 
 from brewpiv2.controller import (
     BrewPiController,
@@ -53,12 +54,28 @@ from pygments.token import Token
 
 from prompt_toolkit.contrib.completers import WordCompleter
 
+import argparse
+from argparse import ArgumentParser
+from prompt_toolkit.buffer import AcceptAction
+from prompt_toolkit.layout.lexers import PygmentsLexer
+from prompt_toolkit.styles.from_pygments import style_from_pygments
+from pygments.styles import get_style_by_name
+
+from brewpiv2.controller import MessageHandler
+
+
+
 command_completer = WordCompleter([
     'mode',
     'fridge',
     'beer',
     'profile',
-    'macro'
+    'macro',
+    'devices',
+    'uninstall',
+    'list',
+    'available',
+    'installed'
 ], ignore_case=True)
 
 
@@ -82,10 +99,6 @@ class ConsoleHandler(Handler):
         self.buffer.insert_text(log_entry)
         self.buffer.newline()
         self.cli.request_redraw()
-
-import argparse
-from argparse import ArgumentParser
-from prompt_toolkit.buffer import AcceptAction
 
 
 class StatusBarArgumentParser(ArgumentParser):
@@ -111,7 +124,12 @@ class BrewPiCommandParser:
 
         # Devices
         parser_mode = subparsers.add_parser(name='devices', app=app, help="query and install devices")
-        parser_mode.add_argument('action', help="switch to mode", choices=['list', 'install', 'uninstall'])
+        parser_device_subparsers = parser_mode.add_subparsers(dest='device_cmd')
+        parser_device_list = parser_device_subparsers.add_parser(name='list', app=app, help="List devices")
+        parser_device_list.add_argument('which', choices=['available', 'installed'])
+
+        parser_device_uninstall = parser_device_subparsers.add_parser(name='uninstall', app=app, help="Uninstall a device")
+        parser_device_uninstall.add_argument('device_id', help="Device ID")
 
         # Macro
         parser_mode = subparsers.add_parser(name='macro', app=app, help="run a macro")
@@ -141,7 +159,6 @@ class BrewPiCommandParser:
                     cmd_to_send = BeerModeCommand(setpoint=args.setpoint)
 
             elif args.cmd == 'macro':
-                import yaml
                 try:
                     with open("{0}.bpm".format(args.file), 'r') as stream:
                         try:
@@ -163,6 +180,15 @@ class BrewPiCommandParser:
                 except FileNotFoundError as e:
                     cli.logger.warn("Coudln't open macro file <{0}.bpm>".format(args.file))
 
+            elif args.cmd == 'devices':
+                if args.device_cmd == 'list':
+                    if args.which == 'available':
+                        cmd_to_send = ListAvailableDevicesCommand()
+                    elif args.which == 'installed':
+                        cmd_to_send = ListInstalledDevicesCommand()
+                elif args.device_cmd == 'uninstall':
+                    cmd_to_send = UninstallDeviceCommand(slot=args.device_id)
+
         if cmd_to_send is not None:
             cli.raw_msg_logger.info("> " + cmd_to_send.render())
             self.app.controller.send(cmd_to_send)
@@ -171,12 +197,6 @@ class BrewPiCommandParser:
 
 
         return True
-
-from prompt_toolkit.layout.lexers import PygmentsLexer
-from prompt_toolkit.styles.from_pygments import style_from_pygments
-from pygments.styles import get_style_by_name
-
-from brewpiv2.controller import MessageHandler
 
 
 class UIMessageHandler(MessageHandler):
@@ -190,6 +210,9 @@ class UIMessageHandler(MessageHandler):
 
     def installed_device(self, anAvailableDeviceMessage):
         self.cli.logger.info("Installed device")
+
+    def uninstalled_device(self, anUninstalledDeviceMessage):
+        self.cli.logger.info("Uninstalled device at slot {0}".format(anUninstalledDeviceMessage.slot))
 
     def log_message(self, aLogMessage):
         self.cli.logger.info("Read Log")

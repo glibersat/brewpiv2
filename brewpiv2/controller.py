@@ -230,6 +230,10 @@ class MessageHandler(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def uninstalled_device(self, anUninstalledDeviceMessage):
+        raise NotImplementedError
+
+    @abstractmethod
     def available_device(self, anAvailableDeviceMessage):
         raise NotImplementedError
 

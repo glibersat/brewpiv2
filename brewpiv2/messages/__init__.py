@@ -2,7 +2,9 @@ from .control import ControlSettingsMessage, ControlConstantsMessage
 from .temperature import TemperaturesMessage
 from .version import VersionMessage
 from .logging import LogMessage
-from .devices import AvailableDeviceMessage, InstalledDeviceMessage
+from .devices import (AvailableDeviceMessage,
+                      InstalledDeviceMessage,
+                      UninstalledDeviceMessage)
 
 __all__ = [VersionMessage,
            ControlSettingsMessage,
@@ -10,4 +12,5 @@ __all__ = [VersionMessage,
            TemperaturesMessage,
            LogMessage,
            AvailableDeviceMessage,
-           InstalledDeviceMessage]
+           InstalledDeviceMessage,
+           UninstalledDeviceMessage]
