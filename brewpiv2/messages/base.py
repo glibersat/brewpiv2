@@ -1,6 +1,9 @@
 import json
+import logging
 
 from ..utils import Visitor
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Message(Visitor):
@@ -22,7 +25,11 @@ class Message(Visitor):
             raise ValueError("Wrong message type, can't decode.")
 
         decoded_messages = []
-        json.loads(raw_message[2:], object_hook=decoded_messages.append)
+        try:
+            json.loads(raw_message[2:], object_hook=decoded_messages.append)
+        except json.decoder.JSONDecodeError as e:
+            LOGGER.warn("Error while decoding message: {0}".format(raw_message))
+            return []
 
         return decoded_messages
 

@@ -24,6 +24,9 @@ class LogMessage(Message):
         self.id = id
         self.message = message
 
+    def visit(self, aMessageHandler):
+        aMessageHandler.log_message(self)
+
     def __str__(self):
         return "LogMessage <level:{0}, id:{1}, msg:{2}>".format(self.level,
                                                                 self.id,

@@ -36,18 +36,19 @@ class InstallDeviceCommand(ControllerCommand):
     cmd = 'U'
 
     def __init__(self, slot, assigned_to_chamber, assigned_to_beer,
-                 function, hardware_type, pin, pin_inverted=0,
+                 function, hardware_type, pin=None, pin_inverted=0,
                  address=None):
         super().__init__()
 
         self.options['i'] = slot
-        self.options['c'] = assigned_to_chamber
-        self.options['b'] = assigned_to_beer
-        self.options['f'] = function
+        self.options['c'] = int(assigned_to_chamber)
+        self.options['b'] = int(assigned_to_beer)
+        self.options['f'] = str(function)
         self.options['h'] = hardware_type
         self.options['p'] = pin
         self.options['x'] = int(pin_inverted)
-        self.options['a'] = address
+        if address:
+            self.options['a'] = address
 
 
 class UninstallDeviceCommand(ControllerCommand):

@@ -37,10 +37,15 @@ class DeviceType:
 
 
 class DeviceFunction:
-    (CHAMBER_DOOR, CHAMBER_HEATER,
-     CHAMBER_COOLER, CHAMBER_LIGHT,
-     CHAMBER_TEMP, ROOM_TEMP, CHAMBER_FAN,
-     MANUAL_ACTUATOR, BEER_TEMP) = range(1, 10)
+    (CHAMBER_DOOR,
+     CHAMBER_HEATER,
+     CHAMBER_COOLER,
+     CHAMBER_LIGHT,
+     CHAMBER_TEMP,
+     ROOM_TEMP,
+     CHAMBER_FAN,
+     MANUAL_ACTUATOR,
+     BEER_TEMP) = range(1, 10)
 
     device_functions = {0: 'None',
                         CHAMBER_DOOR: 'Chamber Door',

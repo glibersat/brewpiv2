@@ -158,7 +158,7 @@ class BrewPiController(Observable):
             else:
                 # complete line received, [0] is complete line [1] is separator [2] is the rest
                 self.buffer = lines[2]
-                yield lines[0]
+                yield lines[0].rstrip('\r').rstrip('\n')
 
 
 class ControllerObserver(Observer):
@@ -173,7 +173,7 @@ class ControllerObserver(Observer):
     def _on_controller_disconnected(self, aBrewPiController):
         pass
 
-    
+
 class BrewPiControllerManager(Observable):
     """
     Helper for discovering BrewPi controllers on USB serial lines
@@ -231,4 +231,20 @@ class MessageHandler(ABC):
 
     @abstractmethod
     def available_device(self, anAvailableDeviceMessage):
+        raise NotImplementedError
+
+    @abstractmethod
+    def log_message(self, aLogMessage):
+        raise NotImplementedError
+
+    @abstractmethod
+    def control_settings(self, aControlSettingsMessage):
+        raise NotImplementedError
+
+    @abstractmethod
+    def control_constants(self, aControlConstantsMessage):
+        raise NotImplementedError
+
+    @abstractmethod
+    def temperatures(self, aTemperaturesMessage):
         raise NotImplementedError
