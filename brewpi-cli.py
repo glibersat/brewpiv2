@@ -75,7 +75,10 @@ command_completer = WordCompleter([
     'uninstall',
     'list',
     'available',
-    'installed'
+    'installed',
+    'chamber',
+    'room',
+    'temperature_sensor'
 ], ignore_case=True)
 
 
@@ -129,12 +132,21 @@ class BrewPiCommandParser:
         parser_device_list.add_argument('which', choices=['available', 'installed'])
 
         parser_device_uninstall = parser_device_subparsers.add_parser(name='uninstall', app=app, help="Uninstall a device")
-        parser_device_uninstall.add_argument('device_id', help="Device ID")
+        parser_device_uninstall.add_argument('slot_id', help="Device ID")
+
+        parser_device_install = parser_device_subparsers.add_parser(name='install', app=app, help="Install a device")
+        parser_device_install.add_argument('slot_id', help="Device ID")
+
+        parser_device_install_subparsers = parser_device_install.add_subparsers(dest='install_hwtype')
+        parser_device_install_temp_sensor = parser_device_install_subparsers.add_parser(name='temperature_sensor', app=app, help="Hardware Type")
+        parser_device_install_temp_sensor.add_argument('address', help="1-wire address")
+        parser_device_install_temp_sensor.add_argument('function', choices=['beer', 'chamber', 'room'], help="Which function to assign to.")
 
         # Macro
         parser_mode = subparsers.add_parser(name='macro', app=app, help="run a macro")
         parser_mode.add_argument('file', help="Name of macro file")
         parser_mode.add_argument('name', help="Name of the macro")
+
 
     def parse(self, cli, buffer):
         curr_line = buffer.document.current_line
@@ -186,8 +198,23 @@ class BrewPiCommandParser:
                         cmd_to_send = ListAvailableDevicesCommand()
                     elif args.which == 'installed':
                         cmd_to_send = ListInstalledDevicesCommand()
+                elif args.device_cmd == 'install':
+                    if args.install_hwtype == 'temperature_sensor':
+                        device_function = {'beer': DeviceFunction.BEER_TEMP,
+                                           'room': DeviceFunction.ROOM_TEMP,
+                                           'chamber': DeviceFunction.CHAMBER_TEMP}[args.function]
+
+                        assigned_to_beer = (device_function == DeviceFunction.BEER_TEMP)
+                        assigned_to_chamber = not assigned_to_beer
+
+                        cmd_to_send = InstallDeviceCommand(slot=args.slot_id,
+                                                           hardware_type=HardwareType.TEMP_SENSOR,
+                                                           assigned_to_beer=assigned_to_beer,
+                                                           assigned_to_chamber=assigned_to_chamber,
+                                                           address=args.address,
+                                                           function=device_function)
                 elif args.device_cmd == 'uninstall':
-                    cmd_to_send = UninstallDeviceCommand(slot=args.device_id)
+                    cmd_to_send = UninstallDeviceCommand(slot=args.slot_id)
 
         if cmd_to_send is not None:
             cli.raw_msg_logger.info("> " + cmd_to_send.render())
@@ -198,6 +225,11 @@ class BrewPiCommandParser:
 
         return True
 
+from brewpiv2.constants import (
+    DeviceFunction,
+    DeviceType,
+    HardwareType
+)
 
 class UIMessageHandler(MessageHandler):
     def __init__(self, cli):
@@ -205,10 +237,13 @@ class UIMessageHandler(MessageHandler):
         self.app = cli.app
         super()
 
-    def available_device(self, anInstalledDeviceMessage):
-        self.cli.logger.info("Available device")
+    def available_device(self, anAvailableDeviceMessage):
+        if anAvailableDeviceMessage.device_type == DeviceType.TEMP_SENSOR:
+            self.cli.logger.info("~> Temperature Sensor at {0}".format(anAvailableDeviceMessage.adddress))
+        else:
+            self.cli.logger.info("Unknown available device {0}".format(anAvailableDeviceMessage))
 
-    def installed_device(self, anAvailableDeviceMessage):
+    def installed_device(self, anInstalledDeviceMessage):
         self.cli.logger.info("Installed device")
 
     def uninstalled_device(self, anUninstalledDeviceMessage):
