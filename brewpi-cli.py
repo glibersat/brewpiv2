@@ -57,7 +57,8 @@ command_completer = WordCompleter([
     'mode',
     'fridge',
     'beer',
-    'profile'
+    'profile',
+    'macro'
 ], ignore_case=True)
 
 
@@ -101,7 +102,7 @@ class BrewPiCommandParser:
         self.app = app
 
         self.parser = StatusBarArgumentParser(prog="brewpi", app=app)
-        subparsers = self.parser.add_subparsers()
+        subparsers = self.parser.add_subparsers(dest="cmd")
 
         # Mode
         parser_mode = subparsers.add_parser(name='mode', app=app, help="switch control mode")
@@ -112,13 +113,20 @@ class BrewPiCommandParser:
         parser_mode = subparsers.add_parser(name='devices', app=app, help="query and install devices")
         parser_mode.add_argument('action', help="switch to mode", choices=['list', 'install', 'uninstall'])
 
+        # Macro
+        parser_mode = subparsers.add_parser(name='macro', app=app, help="run a macro")
+        parser_mode.add_argument('file', help="Name of macro file")
+        parser_mode.add_argument('name', help="Name of the macro")
 
     def parse(self, cli, buffer):
-        curr_line = buffer.document.current_line.split()
+        curr_line = buffer.document.current_line
+        self.parse_line(cli, curr_line, buffer)
 
+    def parse_line(self, cli, line, buffer):
         args = None
+        line = line.split()
         try:
-            args = self.parser.parse_args(args=curr_line)
+            args, leftovers = self.parser.parse_known_args(args=line)
         except argparse.ArgumentError as e:
             cli.logger.error(e)
         except Exception as e:
@@ -126,11 +134,34 @@ class BrewPiCommandParser:
 
         cmd_to_send = None
         if args is not None:
-            if args.mode:
+            if args.cmd == 'mode':
                 if args.mode == "fridge":
                     cmd_to_send = FridgeModeCommand(setpoint=args.setpoint)
                 elif args.mode == "beer":
                     cmd_to_send = BeerModeCommand(setpoint=args.setpoint)
+
+            elif args.cmd == 'macro':
+                import yaml
+                try:
+                    with open("{0}.bpm".format(args.file), 'r') as stream:
+                        try:
+                            data = yaml.load(stream)
+                        except yaml.YAMLError as exc:
+                            cli.logger.info(exc)
+
+                        # now run macro
+                        try:
+                            cmds = data[args.name]
+
+                            for cmd in cmds:
+                                self.parse_line(cli, cmd, buffer)
+                                cli.logger.info("[{0}] -> {1}".format(args.file, cmd))
+                                time.sleep(0.1)
+                        except KeyError:
+                            cli.logger.warn("No macro named <{0}> in file <{1}.bpm>".format(args.name,
+                                                                                            args.file))
+                except FileNotFoundError as e:
+                    cli.logger.warn("Coudln't open macro file <{0}.bpm>".format(args.file))
 
         if cmd_to_send is not None:
             cli.raw_msg_logger.info("> " + cmd_to_send.render())
