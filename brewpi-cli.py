@@ -138,9 +138,20 @@ class BrewPiCommandParser:
         parser_device_install.add_argument('slot_id', help="Device ID")
 
         parser_device_install_subparsers = parser_device_install.add_subparsers(dest='install_hwtype')
+
+        # Temperature sensor
         parser_device_install_temp_sensor = parser_device_install_subparsers.add_parser(name='temperature_sensor', app=app, help="Hardware Type")
         parser_device_install_temp_sensor.add_argument('address', help="1-wire address")
         parser_device_install_temp_sensor.add_argument('function', choices=['beer', 'chamber', 'room'], help="Which function to assign to.")
+
+        # Heater/Cooler
+        parser_device_install_heater = parser_device_install_subparsers.add_parser(name='heater', app=app, help="Install Heater")
+        parser_device_install_heater.add_argument('pin', help="pin where to install")
+
+        # Heater/Cooler
+        parser_device_install_cooler = parser_device_install_subparsers.add_parser(name='cooler', app=app, help="Install Cooler")
+        parser_device_install_cooler.add_argument('pin', help="pin where to install")
+
 
         # Macro
         parser_mode = subparsers.add_parser(name='macro', app=app, help="run a macro")
@@ -213,6 +224,21 @@ class BrewPiCommandParser:
                                                            assigned_to_chamber=assigned_to_chamber,
                                                            address=args.address,
                                                            function=device_function)
+                    elif args.install_hwtype == 'heater':
+                        cmd_to_send = InstallDeviceCommand(slot=args.slot_id,
+                                                           hardware_type=HardwareType.DIGITAL_PIN,
+                                                           assigned_to_beer=False,
+                                                           assigned_to_chamber=True,
+                                                           pin=args.pin,
+                                                           function=DeviceFunction.CHAMBER_HEATER)
+                    elif args.install_hwtype == 'cooler':
+                        cmd_to_send = InstallDeviceCommand(slot=args.slot_id,
+                                                           hardware_type=HardwareType.DIGITAL_PIN,
+                                                           assigned_to_beer=False,
+                                                           assigned_to_chamber=True,
+                                                           pin=args.pin,
+                                                           function=DeviceFunction.CHAMBER_COOLER)
+
                 elif args.device_cmd == 'uninstall':
                     cmd_to_send = UninstallDeviceCommand(slot=args.slot_id)
 
@@ -238,13 +264,28 @@ class UIMessageHandler(MessageHandler):
         super()
 
     def available_device(self, anAvailableDeviceMessage):
-        if anAvailableDeviceMessage.device_type == DeviceType.TEMP_SENSOR:
-            self.cli.logger.info("~> Temperature Sensor at {0}".format(anAvailableDeviceMessage.adddress))
+        if anAvailableDeviceMessage.hardware_type == HardwareType.TEMP_SENSOR:
+            self.cli.logger.info("~ Temperature Sensor 1-wire@{0}".format(anAvailableDeviceMessage.address))
+        elif anAvailableDeviceMessage.hardware_type == HardwareType.DIGITAL_PIN:
+            self.cli.logger.info("~ Digital Pin at {0}".format(anAvailableDeviceMessage.pin))
         else:
             self.cli.logger.info("Unknown available device {0}".format(anAvailableDeviceMessage))
 
     def installed_device(self, anInstalledDeviceMessage):
-        self.cli.logger.info("Installed device")
+        if anInstalledDeviceMessage.device_type == DeviceType.TEMP_SENSOR:
+            self.cli.logger.info("[{0}] Temperature Sensor 1-wire @{1}".format(anInstalledDeviceMessage.slot,
+                                                                          anInstalledDeviceMessage.address))
+        elif anInstalledDeviceMessage.device_type == DeviceType.PWM_ACTUATOR:
+            if anInstalledDeviceMessage.function == DeviceFunction.CHAMBER_HEATER:
+                self.cli.logger.info("[{0}] Chamber Heater on pin {1}".format(anInstalledDeviceMessage.slot,
+                                                                              anInstalledDeviceMessage.pin))
+            elif anInstalledDeviceMessage.function == DeviceFunction.CHAMBER_COOLER:
+                self.cli.logger.info("[{0}] Chamber Cooler on pin {1}".format(anInstalledDeviceMessage.slot,
+                                                                              anInstalledDeviceMessage.pin))
+
+
+        else:
+            self.cli.logger.info("[{0}] Unknow installed device".format(anInstalledDeviceMessage.slot))
 
     def uninstalled_device(self, anUninstalledDeviceMessage):
         self.cli.logger.info("Uninstalled device at slot {0}".format(anUninstalledDeviceMessage.slot))
@@ -286,7 +327,7 @@ class BrewPiApplication(Application):
                 (Token.At,       '@'),
                 (Token.Host,     'localhost'),
                 (Token.Colon,    ':'),
-                (Token.Path,     self.controller.serial.port)
+                (Token.Path,     (self.controller.serial and self.controller.serial.port) or "Not Connected")
             ]
             if self.controller.is_connected:
                 tokens += [
@@ -428,7 +469,7 @@ class BrewPiShell(CommandLineInterface):
             self.app.controller = BrewPiController(args.device_uri)
             self.app.controller.connect()
 
-            self.app.controller.send(ListAvailableDevicesCommand())
+            # self.app.controller.send(ListAvailableDevicesCommand())
 
             super().run()
         finally:
