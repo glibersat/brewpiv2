@@ -118,7 +118,7 @@ class BrewPiController(Observable):
 
     @requires_port_open
     def process_messages(self):
-        in_waiting = self.serial.inWaiting()
+        in_waiting = self.serial.in_waiting
         if in_waiting > 0:
             new_data = self.serial.read(in_waiting)
             new_data = new_data.decode("utf8")

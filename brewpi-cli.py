@@ -122,7 +122,7 @@ class BrewPiCommandParser:
 
         # Mode
         parser_mode = subparsers.add_parser(name='mode', app=app, help="switch control mode")
-        parser_mode.add_argument('mode', help="switch to mode", choices=['profile', 'beer', 'fridge'])
+        parser_mode.add_argument('mode', help="switch to mode", choices=['profile', 'beer', 'fridge', 'off'])
         parser_mode.add_argument('setpoint', help="mode setpoint", type=float)
 
         # Devices
@@ -180,6 +180,9 @@ class BrewPiCommandParser:
                     cmd_to_send = FridgeModeCommand(setpoint=args.setpoint)
                 elif args.mode == "beer":
                     cmd_to_send = BeerModeCommand(setpoint=args.setpoint)
+                elif args.mode == "off":
+                    cmd_to_send = OffModeCommand()
+
 
             elif args.cmd == 'macro':
                 try:
