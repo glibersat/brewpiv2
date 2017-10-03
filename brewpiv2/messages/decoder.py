@@ -9,6 +9,7 @@ def register_to_decoder():
     """
     def _register_in_messagedecoder(message_type):
         RawMessageDecoder.register_message_type(message_type)
+        return message_type
 
     return _register_in_messagedecoder
 
