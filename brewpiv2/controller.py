@@ -18,6 +18,7 @@ LOGGER = logging.getLogger(__name__)
 # -- events -- #
 controller_connected = Event("controller_connected", "A controller has connected")
 controller_disconnected = Event("controller_disconnected", "A controller has been disconnected")
+message_received = Event("message_received", "A message was received from the controller")
 
 
 # -- decorators -- #
@@ -120,7 +121,7 @@ class BrewPiController(Observable):
     def process_messages(self):
         in_waiting = self.serial.in_waiting
         if in_waiting > 0:
-            new_data = self.serial.read(in_waiting)
+            new_data = self.serial.read(4096) # With socket://, in_waiting always returns 1, so force to 4096
             new_data = new_data.decode("utf8")
 
             if new_data:
@@ -166,6 +167,10 @@ class ControllerObserver(Observer):
     Abstract class that answers to controller manager events
     """
     @abstractmethod
+    def _on_message_received(self, aMessage):
+        pass
+
+    @abstractmethod
     def _on_controller_connected(self, aBrewPiController):
         pass
 
@@ -205,7 +210,7 @@ class BrewPiControllerManager(Observable):
                     break
 
             # Mark as disconnected if stale
-            if not found:
+            if not found and not device.startswith("socket://"):
                 controller.disconnect()
                 self.controllers.pop(device)
 
@@ -218,7 +223,7 @@ class BrewPiControllerManager(Observable):
                 yield self.controllers[port.device]
 
 
-class MessageHandler(ABC):
+class MessageHandler:
     """
     An abstract class handling visits from Messages
     """

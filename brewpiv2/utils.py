@@ -10,13 +10,13 @@ class Event(ABC):
         self.description = description
 
 
-class Observer(ABC):
+class Observer:
     """
     Abstract Observer Class for the Observer Pattern
     """
 
 
-class Observable(ABC):
+class Observable:
     """
     Abstract Observable Class for the Observer Pattern
     """

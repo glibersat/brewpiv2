@@ -1,8 +1,9 @@
 from .modes import (
     BeerModeCommand, FridgeModeCommand,
-    ProfileModeCommand, OffModeCommand
+    ProfileModeCommand, OffModeCommand,
+    TestModeCommand
 )
-
+from .controls import ControlSettingsCommand
 from .requests import VersionRequestCommand
 from .devices import (
     ListInstalledDevicesCommand,
@@ -15,8 +16,9 @@ __all_ = [VersionRequestCommand,
           BeerModeCommand,
           FridgeModeCommand,
           ProfileModeCommand,
-          OffModeCommand,
+          OffModeCommand, TestModeCommand,
           ListInstalledDevicesCommand,
           ListAvailableDevicesCommand,
           InstallDeviceCommand,
-          UninstallDeviceCommand]
+          UninstallDeviceCommand,
+          ControlSettingsCommand]

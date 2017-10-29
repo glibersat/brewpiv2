@@ -14,6 +14,7 @@ from brewpiv2.commands import (
     BeerModeCommand, FridgeModeCommand,
     ProfileModeCommand,
     OffModeCommand, VersionRequestCommand,
+    TestModeCommand,
     ListAvailableDevicesCommand,
     ListInstalledDevicesCommand,
     InstallDeviceCommand,
@@ -122,7 +123,7 @@ class BrewPiCommandParser:
 
         # Mode
         parser_mode = subparsers.add_parser(name='mode', app=app, help="switch control mode")
-        parser_mode.add_argument('mode', help="switch to mode", choices=['profile', 'beer', 'fridge', 'off'])
+        parser_mode.add_argument('mode', help="switch to mode", choices=['profile', 'beer', 'fridge', 'off', 'test'])
         parser_mode.add_argument('setpoint', help="mode setpoint", type=float)
 
         # Devices
@@ -182,6 +183,8 @@ class BrewPiCommandParser:
                     cmd_to_send = BeerModeCommand(setpoint=args.setpoint)
                 elif args.mode == "off":
                     cmd_to_send = OffModeCommand()
+                elif args.mode == "test":
+                    cmd_to_send = TestModeCommand()
 
 
             elif args.cmd == 'macro':

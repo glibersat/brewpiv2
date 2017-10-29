@@ -40,6 +40,13 @@ class BeerModeCommand(ConstantTemperatureModeCommand):
     mode = 'b'
     setpoint_name = 'beerSet'
 
+class TestModeCommand(ConstantTemperatureModeCommand):
+    """
+    Test Mode
+    """
+    mode = 't'
+    setpoint_name = 'beerSet'
+
 
 class FridgeModeCommand(ConstantTemperatureModeCommand):
     """
