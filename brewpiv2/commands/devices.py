@@ -1,5 +1,7 @@
 from .base import ControllerCommand
 
+from ..constants import DeviceAssignation
+
 
 class ListInstalledDevicesCommand(ControllerCommand):
     """
@@ -35,14 +37,14 @@ class InstallDeviceCommand(ControllerCommand):
     """
     cmd = 'U'
 
-    def __init__(self, slot, assigned_to_chamber, assigned_to_beer,
+    def __init__(self, slot, assigned_to,
                  function, hardware_type, pin=None, pin_inverted=0,
                  address=None):
         super().__init__()
 
         self.options['i'] = slot
-        self.options['c'] = int(assigned_to_chamber)
-        self.options['b'] = int(assigned_to_beer)
+        self.options['c'] = int(assigned_to == DeviceAssignation.CHAMBER)
+        self.options['b'] = int(assigned_to == DeviceAssignation.BEER)
         self.options['f'] = str(function)
         self.options['h'] = hardware_type
         self.options['p'] = pin

@@ -36,6 +36,11 @@ class DeviceType:
         return cls.device_types[device_type]
 
 
+class DeviceAssignation:
+    (CHAMBER,
+     BEER) = range(1, 3)
+
+
 class DeviceFunction:
     (CHAMBER_DOOR,
      CHAMBER_HEATER,

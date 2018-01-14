@@ -27,6 +27,7 @@ from brewpiv2.messages import (
 )
 from brewpiv2.constants import (
     DeviceFunction, DeviceType,
+    DeviceAssignation,
     HardwareType
 )
 
@@ -221,13 +222,14 @@ class BrewPiCommandParser:
                                            'room': DeviceFunction.ROOM_TEMP,
                                            'chamber': DeviceFunction.CHAMBER_TEMP}[args.function]
 
-                        assigned_to_beer = (device_function == DeviceFunction.BEER_TEMP)
-                        assigned_to_chamber = not assigned_to_beer
+                        if (device_function == DeviceFunction.BEER_TEMP):
+                            assigned_to = DeviceAssignation.BEER
+                        else:
+                            assigned_to = DeviceAssignation.CHAMBER
 
                         cmd_to_send = InstallDeviceCommand(slot=args.slot_id,
                                                            hardware_type=HardwareType.TEMP_SENSOR,
-                                                           assigned_to_beer=assigned_to_beer,
-                                                           assigned_to_chamber=assigned_to_chamber,
+                                                           assigned_to=assigned_to,
                                                            address=args.address,
                                                            function=device_function)
                     elif args.install_hwtype == 'heater':
