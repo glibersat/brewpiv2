@@ -9,7 +9,8 @@ from .devices import (
     ListInstalledDevicesCommand,
     ListAvailableDevicesCommand,
     InstallDeviceCommand,
-    UninstallDeviceCommand
+    UninstallDeviceCommand,
+    WriteDeviceCommand
 )
 
 __all_ = [VersionRequestCommand,
@@ -19,6 +20,7 @@ __all_ = [VersionRequestCommand,
           OffModeCommand, TestModeCommand,
           ListInstalledDevicesCommand,
           ListAvailableDevicesCommand,
+          WriteDeviceCommand,
           InstallDeviceCommand,
           UninstallDeviceCommand,
           ControlSettingsCommand]

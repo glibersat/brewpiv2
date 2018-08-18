@@ -53,6 +53,18 @@ class InstallDeviceCommand(ControllerCommand):
             self.options['a'] = address
 
 
+class WriteDeviceCommand(ControllerCommand):
+    """
+    Write to a device
+    """
+    cmd = 'U'
+
+    def __init__(self, slot, state):
+        super().__init__()
+
+        self.options['w'] = state
+
+
 class UninstallDeviceCommand(ControllerCommand):
     """
     Uninstall a device

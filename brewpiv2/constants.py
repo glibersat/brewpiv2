@@ -41,27 +41,44 @@ class DeviceAssignation:
      BEER) = range(1, 3)
 
 
+class DeviceState:
+    (STATE_OFF,
+     STATE_ON) = range(0, 2)
+
+    
 class DeviceFunction:
-    (CHAMBER_DOOR,
+    (NONE,
+     CHAMBER_DOOR,
      CHAMBER_HEATER,
      CHAMBER_COOLER,
      CHAMBER_LIGHT,
      CHAMBER_TEMP,
-     ROOM_TEMP,
+     LOG1_TEMP,
      CHAMBER_FAN,
      MANUAL_ACTUATOR,
-     BEER_TEMP) = range(1, 10)
+     BEER_TEMP,
+     NOIDEA1,
+     NOIDEA2,
+     NOIDEA3,
+     NOIDEA4,
+     NOIDEA5,
+     NOIDEA6,
+     NOIDEA7,
+     LOG2_TEMP,
+     LOG3_TEMP) = range(0, 19)
 
-    device_functions = {0: 'None',
+    device_functions = {NONE: 'None',
                         CHAMBER_DOOR: 'Chamber Door',
                         CHAMBER_HEATER: 'Chamber Heater',
                         CHAMBER_COOLER: 'Chamber Cooler',
                         CHAMBER_LIGHT: 'Chamber Light',
                         CHAMBER_TEMP: 'Chamber Temp',
-                        ROOM_TEMP: 'Room Temp',
+                        LOG1_TEMP: 'Log1 Temp',
                         CHAMBER_FAN: 'Chamber Fan',
                         MANUAL_ACTUATOR: 'Manual Actuator',
-                        BEER_TEMP: 'Beer Temp'}
+                        BEER_TEMP: 'Beer Temp',
+                        LOG2_TEMP: 'Log2 Temp',
+                        LOG3_TEMP: 'Log3 Temp'}
 
     @classmethod
     def to_str(cls, function):
